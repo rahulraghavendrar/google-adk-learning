@@ -1,508 +1,379 @@
-# ADK Basics - Preliminary Day
+# Google ADK Basics — Preliminary Day Notes
 
 ## What is Google ADK?
 
-ADK (Agent Development Kit) is a framework from Google used to build AI Agents using Gemini.
+Google ADK means Google Agent Development Kit. It is a framework from Google used to build AI agents powered by Gemini models.
 
-Normal Gemini:
+A normal chatbot receives a question and generates a text response. An ADK agent can do more than generate text. It can understand a request, decide whether it needs extra information or an action, use a tool, receive the result, and then generate a final answer.
 
-User → Prompt → Gemini → Response
+For example, if a user asks for the square of a number, the agent can decide to use a Python math function. If a user asks for current weather, the agent can use a weather API tool. If a user asks a question about documents, the agent can use a document-search tool.
 
-ADK:
+The general ADK flow is:
 
-User → Agent → Tool → Gemini → Response
-
-ADK allows Gemini to:
-
-* Use Tools
-* Access APIs
-* Work with Memory
-* Use Sessions
-* Build Multi-Agent Systems
-* Build RAG Applications
+User message → Runner → Agent → Tool if needed → Gemini response → User
 
 ---
 
-# Python Basics Needed For ADK
-
-Before learning ADK, we must understand some Python concepts.
-
-## Variables
-
-```python
-name = "Rahul"
-age = 20
-```
-
-Variables store values.
-
-Example:
-
-```python
-city = "Chennai"
-```
-
-The variable `city` stores the value `"Chennai"`.
-
----
-
-## Functions
-
-Functions are reusable blocks of code.
-
-Example:
-
-```python
-def greet():
-    print("Hello")
-```
-
-Run it using:
-
-```python
-greet()
-```
-
-Output:
-
-```text
-Hello
-```
-
----
-
-## Function Parameters
-
-Parameters are inputs to a function.
-
-Example:
-
-```python
-def greet(name):
-    print(name)
-```
-
-Call:
-
-```python
-greet("Rahul")
-```
-
-Output:
-
-```text
-Rahul
-```
-
----
-
-## Return
-
-Return sends a value back.
-
-Example:
-
-```python
-def add(a, b):
-    return a + b
-```
-
-Call:
-
-```python
-result = add(5, 3)
-```
-
-Result:
-
-```python
-8
-```
-
----
-
-# Understanding This Function
-
-```python
-def square_number(number: int) -> int:
-    return number * number
-```
-
-Breakdown:
-
-## def
-
-Creates a function.
-
-```python
-def
-```
-
-means
-
-```text
-Define Function
-```
-
----
-
-## square_number
-
-Function name.
-
-```python
-square_number
-```
-
----
-
-## number
-
-Input parameter.
-
-```python
-(number)
-```
-
----
-
-## : int
-
-Type Hint.
-
-```python
-number: int
-```
-
-means
-
-```text
-Expected to receive an integer
-```
-
-Example:
-
-```python
-square_number(5)
-```
-
----
-
-## -> int
-
-Return Type Hint.
-
-```python
--> int
-```
-
-means
-
-```text
-Returns an integer
-```
-
----
-
-## return
-
-Returns a value.
-
-```python
-return number * number
-```
-
-Example:
-
-```python
-square_number(5)
-```
-
-returns
-
-```python
-25
-```
-
----
-
-# Lists
-
-Lists store multiple values.
-
-Example:
-
-```python
-fruits = ["apple", "banana", "mango"]
-```
-
-Access values:
-
-```python
-fruits[0]
-```
-
-Output:
-
-```text
-apple
-```
-
----
-
-# Imports
-
-Imports bring code from libraries.
-
-Example:
-
-```python
-from google.adk.agents import Agent
-```
-
-Similar to:
-
-```python
-from math import sqrt
-```
-
----
-
-# ADK Concepts
+# Main ADK Components
 
 ## Agent
 
-An Agent is the Brain.
+An Agent is the main AI decision-maker in an ADK application.
 
-Example:
+The Agent uses a Gemini model as its language-model brain. It reads the user’s message, follows its instructions, decides whether a tool is needed, uses the result of the tool, and creates the final response.
 
-```python
-agent = Agent(...)
-```
+A useful mental model is:
 
-Responsibilities:
+Agent = Brain or Manager
 
-* Understand user request
-* Reason
-* Decide which tool to use
-* Generate response
+The Agent does not directly perform every task itself. It can decide which available tool should perform a task.
 
-Think:
+---
 
-```text
-Agent = Manager
-```
+## Model
+
+The model is the Gemini model that powers the Agent.
+
+The model is responsible for understanding language, following instructions, deciding when a tool may be useful, and generating a response.
+
+For example, a model such as Gemini Flash is useful when you want fast responses.
+
+A simple mental model is:
+
+Model = Language and reasoning ability inside the Agent
+
+---
+
+## Instruction
+
+An instruction tells the Agent how it should behave.
+
+It is similar to a system prompt. It can tell the Agent what role it has, what type of answers to give, when to use tools, and what rules to follow.
+
+For example, an instruction can tell an Agent to behave like a math tutor, explain concepts simply, or always use a document-search tool before answering document-related questions.
+
+A simple mental model is:
+
+Instruction = Rules given to the Agent
 
 ---
 
 ## Tool
 
-A Tool is a Python function that the Agent can use.
+A Tool is an action that an Agent can use.
 
-Example:
+In basic ADK programs, a tool is often a normal Python function. The function can perform a task and return a result.
 
-```python
-def square_number(number):
-    return number * number
-```
+Examples of tool tasks include calculating a value, getting weather information, searching documents, calling an API, checking a database, or retrieving information from a vector database.
 
-Registered as:
+A useful mental model is:
 
-```python
-tools=[square_number]
-```
+Tool = Worker or Employee
 
-Think:
-
-```text
-Tool = Employee
-```
-
-The Agent asks the Tool to perform work.
+The Agent decides when a tool should be used. The Tool performs the actual action and returns a result to the Agent.
 
 ---
 
-## Why tools=[square_number]?
+## Runner
 
-This:
+A Runner is the component that executes the Agent.
 
-```python
-tools=[square_number]
-```
+Creating an Agent only creates the AI object. The Runner is what actually sends a user message to the Agent, manages tool calls, uses the session, receives events from the Agent, and returns the final response.
 
-means:
+A useful mental model is:
 
-```text
-Give the Agent access to the function
-```
+Runner = Execution Engine
 
-Notice:
-
-```python
-square_number
-```
-
-does NOT execute the function.
-
-But:
-
-```python
-square_number()
-```
-
-executes the function.
+The Runner handles the flow from the user’s message to the Agent’s final answer.
 
 ---
 
-## Agent Creation
+## Session
 
-```python
-agent = Agent(
-    name="MathAgent",
-    model="gemini-2.5-flash",
-    instruction="You are a math assistant.",
-    tools=[square_number]
-)
-```
+A Session is one conversation thread.
 
-Breakdown:
+It stores messages and responses for one conversation while the program is running. It is similar to one chat window in ChatGPT.
 
-### name
+For example, if a user says their name in one message and asks for their name in the next message, the Agent can use the previous message only if both messages belong to the same session.
 
-```python
-name="MathAgent"
-```
+A useful mental model is:
 
-Agent identifier.
+Session = One chat conversation
+
+A user can have multiple sessions. Each session is a separate conversation.
 
 ---
 
-### model
+## Session Service
 
-```python
-model="gemini-2.5-flash"
-```
+A Session Service creates and manages sessions.
 
-Gemini model powering the Agent.
+For learning, we use an in-memory session service. In-memory means that the conversation is stored temporarily in RAM.
 
----
+This means the session exists while the program is running. When the program stops, the session and its conversation history are deleted.
 
-### instruction
+A useful mental model is:
 
-```python
-instruction="You are a math assistant."
-```
+In-memory session service = Temporary notebook for conversations
 
-System Prompt.
-
-Defines Agent behavior.
+Later, real applications can use permanent storage such as a database so that conversations remain available after the application restarts.
 
 ---
 
-### tools
+# App Name, User ID, and Session ID
 
-```python
-tools=[square_number]
-```
+An ADK application usually uses three labels:
 
-Available functions the Agent can use.
+* App name identifies the application.
+* User ID identifies the person using the application.
+* Session ID identifies one conversation for that user.
 
----
+The structure can be understood like this:
 
-# Objects
+Application → User → Conversation session
 
-ADK uses Objects.
+One user can have many sessions. For example, one session can be for ADK learning and another session can be for a RAG project.
 
-Example:
-
-```python
-agent = Agent(...)
-```
-
-This creates an Agent object.
-
-Similar to:
-
-```python
-car = Car()
-```
-
-or
-
-```python
-student = Student()
-```
+The session ID is important because messages sent with the same session ID belong to the same conversation.
 
 ---
 
-# Dot Notation
+# Python Concepts Used in ADK
 
-Example:
+## Variables
 
-```python
-agent.name
-```
+A variable stores a value.
 
-Accesses data inside an object.
+In ADK, variables are used to store things such as the Agent, Runner, session service, app name, user ID, session ID, and user message.
 
-Example:
-
-```python
-car.speed
-```
-
-or
-
-```python
-car.start()
-```
-
-Same concept.
+A variable is like a labeled box that holds information.
 
 ---
 
-# Concepts Not Yet Covered
+## Functions
 
-The following ADK concepts will be learned later:
+A function is a reusable block of code that performs a task.
 
-* Sessions
-* Memory
+In ADK, functions are commonly used as tools. For example, a function can calculate the square of a number or search for documents.
+
+A function can receive input values, perform some work, and return an output value.
+
+---
+
+## Parameters
+
+Parameters are inputs received by a function.
+
+For example, a math function may receive a number as its parameter. A document-search function may receive a query as its parameter.
+
+Parameters allow the same function to work with different inputs.
+
+---
+
+## Return
+
+Return sends the result of a function back to the place where the function was called.
+
+For example, a square-number tool receives a number, calculates its square, and returns the answer.
+
+The Agent can then use that returned result in its final response.
+
+---
+
+## Type Hints
+
+Type hints describe the expected type of data.
+
+For example, a type hint can indicate that a function expects an integer as input and returns an integer as output.
+
+Type hints make code easier to understand and help tools identify possible mistakes. They are mainly guidance for programmers and development tools.
+
+---
+
+## Lists
+
+A list stores multiple values in one place.
+
+In ADK, a list is used to give an Agent one or more tools.
+
+An Agent may have one tool, such as a calculator, or many tools, such as a calculator, weather checker, database searcher, and document retriever.
+
+---
+
+## Classes and Objects
+
+A class is like a blueprint. An object is something created using that blueprint.
+
+In ADK, Agent, Runner, and Session Service are classes.
+
+When you create an Agent, you create an Agent object. When you create a Runner, you create a Runner object.
+
+A useful analogy is:
+
+Car is a blueprint. A specific car created from that blueprint is an object.
+
+Similarly, Agent is a blueprint. Your configured AI assistant is an Agent object.
+
+---
+
+## Dot Notation
+
+Dot notation is used to access something inside an object.
+
+For example, dot notation can access an Agent’s name or call a function that belongs to a session service or Runner.
+
+A useful analogy is:
+
+A phone object may have a call action. A car object may have a start action.
+
+In ADK, a session service can have an action to create a session, and a Runner can have an action to run an Agent.
+
+---
+
+# Asynchronous Programming
+
+## What is asyncio?
+
+Asyncio is Python’s built-in library for asynchronous programming.
+
+ADK uses asynchronous programming because some tasks take time. For example, creating a session, sending a request to Gemini, waiting for Gemini’s response, calling a tool, and receiving a tool result may not happen instantly.
+
+Asyncio helps Python manage these waiting tasks properly.
+
+---
+
+## Async Function
+
+An async function is a function that can perform tasks that need waiting.
+
+ADK uses async functions because it may need to wait for external services such as Gemini or an API.
+
+---
+
+## Await
+
+Await means that Python should wait until an asynchronous task finishes before moving to the next step.
+
+For example, a session must be fully created before the Runner can use it.
+
+If the program does not wait for the session to be created, the Runner may fail because it cannot find the session.
+
+This is why an error such as “session not found” can happen when the session creation step is not awaited.
+
+---
+
+## Async For
+
+An Agent may produce multiple events during one request.
+
+For example, the Agent can receive the user message, decide to call a tool, receive the tool result, and generate a final answer.
+
+Async for reads these events one by one as they arrive.
+
+The program usually checks for the final response event and prints only the final answer for the user.
+
+---
+
+## Starting an Async Program
+
+An async function does not run automatically after it is created.
+
+The program needs an async runner to start the main async function.
+
+This starts the asynchronous flow, creates the session, creates the Runner, sends the message, receives Agent events, and prints the final answer.
+
+---
+
+# Structured User Messages
+
+ADK uses structured message objects instead of sending only a plain text string.
+
+A structured message includes information such as:
+
+* Who sent the message, such as the user.
+* The content of the message.
+* One or more parts of the message.
+
+This structure helps ADK and Gemini clearly understand the role and content of each message.
+
+---
+
+# Conversation Memory Through Sessions
+
+A session allows an Agent to use earlier messages from the same conversation.
+
+For example, if a user shares their name and later asks what their name is, the Agent can answer correctly when both messages use the same session.
+
+If the second message uses a different session, the Agent treats it as a new conversation and may not know the earlier information.
+
+In-memory sessions only remember information while the program is running.
+
+---
+
+# Full ADK Flow
+
+The complete flow learned today is:
+
+1. A user sends a message.
+2. The Runner starts the process.
+3. The Runner finds the correct session.
+4. The Agent reads its instructions.
+5. The Agent understands the user’s request.
+6. The Agent decides whether a tool is needed.
+7. If needed, the Tool performs an action.
+8. The Tool returns a result to the Agent.
+9. The Agent uses Gemini to generate the final response.
+10. The Runner returns events.
+11. The program displays the final response.
+
+---
+
+# Key Mental Model
+
+Agent = Brain or decision-maker
+
+Model = Gemini intelligence inside the Agent
+
+Instruction = Rules for the Agent
+
+Tool = Action performer
+
+Runner = Execution engine
+
+Session = One conversation thread
+
+Session Service = Storage manager for sessions
+
+Asyncio = Python system for handling tasks that require waiting
+
+---
+
+# What We Have Learned So Far
+
+* What Google ADK is
+* What an AI Agent is
+* Agent, Model, and Instruction
+* Tools and Python functions
 * Runner
-* Async Programming
-* Function Calling
-* Multi-Agent Systems
-* RAG Agents
-* Tool Calling Flow
-* ADK Workflows
+* Sessions and conversation memory
+* Session Service and temporary in-memory storage
+* App name, user ID, and session ID
+* Variables, functions, parameters, return values, lists, classes, objects, and dot notation
+* Asyncio, async functions, await, and async for
+* Structured user messages
+* The complete ADK conversation flow
 
 ---
 
-# Current Learning Summary
+# Next Topics
 
-Learned:
+The next ADK topics are:
 
-* Variables
-* Functions
-* Parameters
-* Return
-* Lists
-* Imports
-* Objects
-* Agent
-* Tool
-* Tool Registration
-
-Current Flow:
-
-User
-↓
-Agent
-↓
-Tool
-↓
-Result
-
-This is the foundation required before learning Sessions, Runners and Advanced ADK.
-
-```
-```
+* Session state
+* Multiple tools
+* Tool inputs and outputs
+* Better Agent instructions
+* Sub-agents
+* Multi-agent systems
+* ADK with RAG
+* Deployment
