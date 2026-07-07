@@ -1,44 +1,65 @@
 import asyncio
 
+from dotenv import load_dotenv
 from google.adk.agents import Agent
 from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
 from google.genai import types
 
-def square_number(number: int) -> int:
-    return number * number
 
-agent=Agent(
-    name="MathAgent",
+load_dotenv()
+
+
+agent = Agent(
+    name="StateAssistant",
     model="gemini-2.5-flash",
-    instruction='''You are a helpful math assistant
-    Use the square tool whenever asked to square a number.''',
-    tools=[square_number]
+    instruction="""
+    You are a helpful assistant.
+    Use the user's name and learning topic from session state when answering.
+    """
 )
+
+
 async def main():
     session_service = InMemorySessionService()
 
-    app_name="MathAgentApp"
-    user_id="user123"
-    session_id="session456"
+    app_name = "state_demo"
+    user_id = "user_1"
+    session_id = "session_1"
 
     await session_service.create_session(
         app_name=app_name,
         user_id=user_id,
-        session_id=session_id
+        session_id=session_id,
+        state={
+            "user_name": "Rahul",
+            "topic": "Google ADK"
+        }
     )
-    runner=Runner(
+
+    runner = Runner(
         agent=agent,
+        app_name=app_name,
         session_service=session_service
-        app_name=app_name
     )
-    user_message=types.Message(
+
+    user_message = types.Content(
         role="user",
-        content="Please square the number 7."
+        parts=[
+            types.Part(
+                text="Hello. What topic am I learning?"
+            )
+        ]
     )
-    async for message in runner.stream_messages(
-        user_message=user_message,
-        session_id=session_id
+
+    async for event in runner.run_async(
+        user_id=user_id,
+        session_id=session_id,
+        new_message=user_message
     ):
-        print(f"{message.role}: {message.content}") 
-        
+        if event.is_final_response():
+            print(event.content.parts[0].text)
+
+
+asyncio.run(main())
+```
