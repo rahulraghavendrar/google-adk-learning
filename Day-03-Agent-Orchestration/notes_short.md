@@ -1,8 +1,8 @@
 # Day 3 — Agent Orchestration & Multi-Agent Systems
 
-This note is a short, practical summary of Day 3. The main idea is to learn how multiple agents can work together in one application.
+This note is a short summary of Day 3. The goal is to understand how multiple agents can work together in one application.
 
-## Why use multiple agents?
+## Main idea
 A single agent can become too busy when it handles many unrelated tasks. A multi-agent system splits work into smaller, focused roles.
 
 This makes the system:
@@ -13,11 +13,11 @@ This makes the system:
 
 A good rule is: one agent should have one clear responsibility.
 
-## Core idea: decomposition
-Decomposition means breaking one big task into smaller tasks.
+## Why use multiple agents?
+Multi-agent systems are useful when a task can be broken into smaller parts.
 
 Example:
-- one agent finds attendance details
+- one agent finds attendance information
 - another agent checks exam eligibility
 - the final answer combines both results
 
@@ -77,7 +77,7 @@ The list of child agents inside a workflow or coordinator.
 Functions an agent can call. Each agent should usually get only the tools it needs.
 
 ### output_key
-This saves an agent's output into shared session state.
+This saves an agent’s output into shared session state.
 
 ### session state
 Shared memory for agents in the same session. It lets one agent pass information to another.
